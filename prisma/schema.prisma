@@ -41,7 +41,7 @@ model SalesOrderHeader {
 
 model SalesOrderDetail {
   SalesOrderID        Int      @db.Int
-  SalesOrderDetailID  BigInt   @default(autoincrement())
+  SalesOrderDetailID  Int      @default(autoincrement())
   OrderQty            Int      @db.SmallInt
   ProductID           Int
   UnitPrice           Float  @db.Money
