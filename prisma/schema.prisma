@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+  schemas  = ["SalesLT"]
+}
+
+model SalesOrderHeader {
+  SalesOrderID          Int                 @id @default(autoincrement())
+  RevisionNumber        Int                 @default(0) @db.TinyInt
+  OrderDate             DateTime            @db.DateTime2
+  DueDate               DateTime            @db.DateTime2
+  ShipDate              DateTime?           @db.DateTime2
+  Status                Int                 @default(1) @db.TinyInt
+  OnlineOrderFlag       Boolean             @default(true)
+  PurchaseOrderNumber   String?             @db.NVarChar(25)
+  AccountNumber         String?             @db.NVarChar(15)
+  CustomerID            Int
+  BillToAddressID       Int
+  ShipToAddressID       Int
+  CreditCardApprovalCode String?            @db.VarChar(15)
+  SubTotal              Float             @default(0.00) @db.Money
+  TaxAmt                Float             @default(0.00) @db.Money
+  Freight               Float             @default(0.00) @db.Money
+  Comment               String?             @db.NVarChar(128)
+  ModifiedDate          DateTime            @db.DateTime2
+
+  // Relations
+  SalesOrderDetails     SalesOrderDetail[]
+
+  @@index([CustomerID])
+  @@map("SalesOrderHeader")
+  @@schema("SalesLT")
+}
+
+model SalesOrderDetail {
+  SalesOrderID        Int      @db.Int
+  SalesOrderDetailID  BigInt   @default(autoincrement())
+  OrderQty            Int      @db.SmallInt
+  ProductID           Int
+  UnitPrice           Float  @db.Money
+  UnitPriceDiscount   Float  @default(0.0) @db.Money
+  ModifiedDate        DateTime @db.DateTime2
+
+  // Relations
+  SalesOrderHeader    SalesOrderHeader @relation(fields: [SalesOrderID], references: [SalesOrderID])
+  Product             Product          @relation(fields: [ProductID], references: [ProductID])
+
+  @@id([SalesOrderID, SalesOrderDetailID])
+  @@index([SalesOrderID])
+  @@index([ProductID])
+  @@map("SalesOrderDetail")
+  @@schema("SalesLT")
+}
+
+model Product {
+  ProductID         Int       @id @default(autoincrement())
+  Name              String    @db.NVarChar(50)
+  ProductNumber     String    @db.NVarChar(25)
+  Color             String?   @db.NVarChar(15)
+  StandardCost      Float   @db.Money
+  ListPrice         Float   @db.Money
+  Size              String?   @db.NVarChar(5)
+  Weight            Decimal?  @db.Decimal(8, 2)
+  ProductModelID    Int?
+  SellStartDate     DateTime  @db.DateTime2
+  SellEndDate       DateTime? @db.DateTime2
+  DiscontinuedDate  DateTime? @db.DateTime2
+  ModifiedDate      DateTime  @default(now()) @db.DateTime2
+
+  // Relations
+  SalesOrderDetails SalesOrderDetail[]
+
+  @@index([Name])
+  @@index([ProductNumber])
+  @@map("Product")
+  @@schema("SalesLT")
+}
